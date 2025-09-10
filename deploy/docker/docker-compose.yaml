@@ -2,7 +2,7 @@ version: "3"
 x-common: &common
   networks:
     - signoz-net
-  restart: unless-stopped
+  restart: no
   logging:
     options:
       max-size: 50m

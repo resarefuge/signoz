@@ -1,25 +1,23 @@
-version: '3'
+version: "3"
 x-common:
   networks:
     - signoz-net
-  restart: 'no'
   logging:
     options:
       max-size: 50m
-      max-file: '3'
+      max-file: "3"
 x-clickhouse-defaults:
   networks:
     - signoz-net
-  restart: 'no'
   logging:
     options:
       max-size: 50m
-      max-file: '3'
+      max-file: "3"
   image: clickhouse/clickhouse-server:25.5.6
   tty: true
   labels:
-    signoz.io/scrape: 'true'
-    signoz.io/port: '9363'
+    signoz.io/scrape: "true"
+    signoz.io/port: "9363"
     signoz.io/path: /metrics
   depends_on:
     init-clickhouse:
@@ -41,16 +39,15 @@ x-clickhouse-defaults:
 x-zookeeper-defaults:
   networks:
     - signoz-net
-  restart: 'no'
   logging:
     options:
       max-size: 50m
-      max-file: '3'
+      max-file: "3"
   image: signoz/zookeeper:3.7.1
   user: root
   labels:
-    signoz.io/scrape: 'true'
-    signoz.io/port: '9141'
+    signoz.io/scrape: "true"
+    signoz.io/port: "9141"
     signoz.io/path: /metrics
   healthcheck:
     test:
@@ -62,11 +59,10 @@ x-zookeeper-defaults:
 x-db-depend:
   networks:
     - signoz-net
-  restart: 'no'
   logging:
     options:
       max-size: 50m
-      max-file: '3'
+      max-file: "3"
   depends_on:
     clickhouse:
       condition: service_healthy
@@ -80,7 +76,7 @@ services:
     logging:
       options:
         max-size: 50m
-        max-file: '3'
+        max-file: "3"
     image: clickhouse/clickhouse-server:25.5.6
     container_name: signoz-init-clickhouse
     command:
@@ -104,20 +100,19 @@ services:
 
         '
     volumes:
-      - ../common/clickhouse/user_scripts:/var/lib/clickhouse/user_scripts/
+      - deploy/common/clickhouse/user_scripts:/var/lib/clickhouse/user_scripts/
   zookeeper-1:
     networks:
       - signoz-net
-    restart: 'no'
     logging:
       options:
         max-size: 50m
-        max-file: '3'
+        max-file: "3"
     image: signoz/zookeeper:3.7.1
     user: root
     labels:
-      signoz.io/scrape: 'true'
-      signoz.io/port: '9141'
+      signoz.io/scrape: "true"
+      signoz.io/port: "9141"
       signoz.io/path: /metrics
     healthcheck:
       test:
@@ -138,16 +133,15 @@ services:
   clickhouse:
     networks:
       - signoz-net
-    restart: 'no'
     logging:
       options:
         max-size: 50m
-        max-file: '3'
+        max-file: "3"
     image: clickhouse/clickhouse-server:25.5.6
     tty: true
     labels:
-      signoz.io/scrape: 'true'
-      signoz.io/port: '9363'
+      signoz.io/scrape: "true"
+      signoz.io/port: "9363"
       signoz.io/path: /metrics
     depends_on:
       init-clickhouse:
@@ -168,20 +162,19 @@ services:
       - CLICKHOUSE_SKIP_USER_SETUP=1
     container_name: signoz-clickhouse
     volumes:
-      - ../common/clickhouse/config.xml:/etc/clickhouse-server/config.xml
-      - ../common/clickhouse/users.xml:/etc/clickhouse-server/users.xml
-      - ../common/clickhouse/custom-function.xml:/etc/clickhouse-server/custom-function.xml
-      - ../common/clickhouse/user_scripts:/var/lib/clickhouse/user_scripts/
-      - ../common/clickhouse/cluster.xml:/etc/clickhouse-server/config.d/cluster.xml
+      - deploy/common/clickhouse/config.xml:/etc/clickhouse-server/config.xml
+      - deploy/common/clickhouse/users.xml:/etc/clickhouse-server/users.xml
+      - deploy/common/clickhouse/custom-function.xml:/etc/clickhouse-server/custom-function.xml
+      - deploy/common/clickhouse/user_scripts:/var/lib/clickhouse/user_scripts/
+      - deploy/common/clickhouse/cluster.xml:/etc/clickhouse-server/config.d/cluster.xml
       - clickhouse:/var/lib/clickhouse/
   signoz:
     networks:
       - signoz-net
-    restart: 'no'
     logging:
       options:
         max-size: 50m
-        max-file: '3'
+        max-file: "3"
     depends_on:
       clickhouse:
         condition: service_healthy
@@ -194,8 +187,8 @@ services:
     ports:
       - 8080:8080
     volumes:
-      - ../common/signoz/prometheus.yml:/root/config/prometheus.yml
-      - ../common/dashboards:/root/config/dashboards
+      - deploy/common/signoz/prometheus.yml:/root/config/prometheus.yml
+      - deploy/common/dashboards:/root/config/dashboards
       - sqlite:/var/lib/signoz/
     environment:
       - SIGNOZ_ALERTMANAGER_PROVIDER=signoz
@@ -220,11 +213,10 @@ services:
   otel-collector:
     networks:
       - signoz-net
-    restart: 'no'
     logging:
       options:
         max-size: 50m
-        max-file: '3'
+        max-file: "3"
     depends_on:
       signoz:
         condition: service_healthy
@@ -236,8 +228,8 @@ services:
       - --copy-path=/var/tmp/collector-config.yaml
       - --feature-gates=-pkg.translator.prometheus.NormalizeName
     volumes:
-      - ./otel-collector-config.yaml:/etc/otel-collector-config.yaml
-      - ../common/signoz/otel-collector-opamp-config.yaml:/etc/manager-config.yaml
+      - deploy/docker/otel-collector-config.yaml:/etc/otel-collector-config.yaml
+      - deploy/common/signoz/otel-collector-opamp-config.yaml:/etc/manager-config.yaml
     environment:
       - OTEL_RESOURCE_ATTRIBUTES=host.name=signoz-host,os.type=linux
       - LOW_CARDINAL_EXCEPTION_GROUPING=false
@@ -251,7 +243,7 @@ services:
     logging:
       options:
         max-size: 50m
-        max-file: '3'
+        max-file: "3"
     image: signoz/signoz-schema-migrator:${OTELCOL_TAG:-v0.129.4}
     container_name: schema-migrator-sync
     command:
@@ -268,7 +260,7 @@ services:
     logging:
       options:
         max-size: 50m
-        max-file: '3'
+        max-file: "3"
     depends_on:
       clickhouse:
         condition: service_healthy
