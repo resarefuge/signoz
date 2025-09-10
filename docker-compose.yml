@@ -169,18 +169,22 @@ services:
       - type: bind
         source: ./deploy/common/clickhouse/config.xml
         target: /etc/clickhouse-server/config.xml
+        isDirectory: false
       - type: bind
         source: ./deploy/common/clickhouse/users.xml
         target: /etc/clickhouse-server/users.xml
+        isDirectory: false
       - type: bind
         source: ./deploy/common/clickhouse/custom-function.xml
         target: /etc/clickhouse-server/custom-function.xml
+        isDirectory: false
       - type: bind
         source: ./deploy/common/clickhouse/user_scripts
         target: /var/lib/clickhouse/user_scripts/
       - type: bind
         source: ./deploy/common/clickhouse/cluster.xml
         target: /etc/clickhouse-server/config.d/cluster.xml
+        isDirectory: false
       - type: volume
         source: clickhouse
         target: /var/lib/clickhouse/
@@ -206,6 +210,7 @@ services:
       - type: bind
         source: ./deploy/common/signoz/prometheus.yml
         target: /root/config/prometheus.yml
+        isDirectory: false
       - type: bind
         source: ./deploy/common/dashboards
         target: /root/config/dashboards
@@ -253,9 +258,11 @@ services:
       - type: bind
         source: ./deploy/docker/otel-collector-config.yaml
         target: /etc/otel-collector-config.yaml
+        isDirectory: false
       - type: bind
         source: ./deploy/common/signoz/otel-collector-opamp-config.yaml
         target: /etc/manager-config.yaml
+        isDirectory: false
     environment:
       - OTEL_RESOURCE_ATTRIBUTES=host.name=signoz-host,os.type=linux
       - LOW_CARDINAL_EXCEPTION_GROUPING=false
