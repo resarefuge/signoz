@@ -100,7 +100,9 @@ services:
 
         '
     volumes:
-      - deploy/common/clickhouse/user_scripts:/var/lib/clickhouse/user_scripts/
+      - type: bind
+        source: deploy/common/clickhouse/user_scripts
+        target: /var/lib/clickhouse/user_scripts/
   zookeeper-1:
     networks:
       - signoz-net
@@ -162,11 +164,21 @@ services:
       - CLICKHOUSE_SKIP_USER_SETUP=1
     container_name: signoz-clickhouse
     volumes:
-      - deploy/common/clickhouse/config.xml:/etc/clickhouse-server/config.xml
-      - deploy/common/clickhouse/users.xml:/etc/clickhouse-server/users.xml
-      - deploy/common/clickhouse/custom-function.xml:/etc/clickhouse-server/custom-function.xml
-      - deploy/common/clickhouse/user_scripts:/var/lib/clickhouse/user_scripts/
-      - deploy/common/clickhouse/cluster.xml:/etc/clickhouse-server/config.d/cluster.xml
+      - type: bind
+        source: deploy/common/clickhouse/config.xml
+        target: /etc/clickhouse-server/config.xml
+      - type: bind
+        source: deploy/common/clickhouse/users.xml
+        target: /etc/clickhouse-server/users.xml
+      - type: bind
+        source: deploy/common/clickhouse/custom-function.xml
+        target: /etc/clickhouse-server/custom-function.xml
+      - type: bind
+        source: deploy/common/clickhouse/user_scripts
+        target: /var/lib/clickhouse/user_scripts/
+      - type: bind
+        source: deploy/common/clickhouse/cluster.xml
+        target: /etc/clickhouse-server/config.d/cluster.xml
       - clickhouse:/var/lib/clickhouse/
   signoz:
     networks:
@@ -187,8 +199,12 @@ services:
     ports:
       - 8080:8080
     volumes:
-      - deploy/common/signoz/prometheus.yml:/root/config/prometheus.yml
-      - deploy/common/dashboards:/root/config/dashboards
+      - type: bind
+        source: deploy/common/signoz/prometheus.yml
+        target: /root/config/prometheus.yml
+      - type: bind
+        source: deploy/common/dashboards
+        target: /root/config/dashboards
       - sqlite:/var/lib/signoz/
     environment:
       - SIGNOZ_ALERTMANAGER_PROVIDER=signoz
@@ -228,8 +244,12 @@ services:
       - --copy-path=/var/tmp/collector-config.yaml
       - --feature-gates=-pkg.translator.prometheus.NormalizeName
     volumes:
-      - deploy/docker/otel-collector-config.yaml:/etc/otel-collector-config.yaml
-      - deploy/common/signoz/otel-collector-opamp-config.yaml:/etc/manager-config.yaml
+      - type: bind
+        source: deploy/docker/otel-collector-config.yaml
+        target: /etc/otel-collector-config.yaml
+      - type: bind
+        source: deploy/common/signoz/otel-collector-opamp-config.yaml
+        target: /etc/manager-config.yaml
     environment:
       - OTEL_RESOURCE_ATTRIBUTES=host.name=signoz-host,os.type=linux
       - LOW_CARDINAL_EXCEPTION_GROUPING=false
