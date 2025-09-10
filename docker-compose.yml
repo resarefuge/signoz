@@ -101,7 +101,7 @@ services:
         '
     volumes:
       - type: bind
-        source: deploy/common/clickhouse/user_scripts
+        source: ./deploy/common/clickhouse/user_scripts
         target: /var/lib/clickhouse/user_scripts/
   zookeeper-1:
     networks:
@@ -125,7 +125,9 @@ services:
       retries: 3
     container_name: signoz-zookeeper-1
     volumes:
-      - zookeeper-1:/bitnami/zookeeper
+      - type: volume
+        source: zookeeper-1
+        target: /bitnami/zookeeper
     environment:
       - ZOO_SERVER_ID=1
       - ALLOW_ANONYMOUS_LOGIN=yes
@@ -165,21 +167,23 @@ services:
     container_name: signoz-clickhouse
     volumes:
       - type: bind
-        source: deploy/common/clickhouse/config.xml
+        source: ./deploy/common/clickhouse/config.xml
         target: /etc/clickhouse-server/config.xml
       - type: bind
-        source: deploy/common/clickhouse/users.xml
+        source: ./deploy/common/clickhouse/users.xml
         target: /etc/clickhouse-server/users.xml
       - type: bind
-        source: deploy/common/clickhouse/custom-function.xml
+        source: ./deploy/common/clickhouse/custom-function.xml
         target: /etc/clickhouse-server/custom-function.xml
       - type: bind
-        source: deploy/common/clickhouse/user_scripts
+        source: ./deploy/common/clickhouse/user_scripts
         target: /var/lib/clickhouse/user_scripts/
       - type: bind
-        source: deploy/common/clickhouse/cluster.xml
+        source: ./deploy/common/clickhouse/cluster.xml
         target: /etc/clickhouse-server/config.d/cluster.xml
-      - clickhouse:/var/lib/clickhouse/
+      - type: volume
+        source: clickhouse
+        target: /var/lib/clickhouse/
   signoz:
     networks:
       - signoz-net
@@ -200,12 +204,14 @@ services:
       - 8080:8080
     volumes:
       - type: bind
-        source: deploy/common/signoz/prometheus.yml
+        source: ./deploy/common/signoz/prometheus.yml
         target: /root/config/prometheus.yml
       - type: bind
-        source: deploy/common/dashboards
+        source: ./deploy/common/dashboards
         target: /root/config/dashboards
-      - sqlite:/var/lib/signoz/
+      - type: volume
+        source: sqlite
+        target: /var/lib/signoz/
     environment:
       - SIGNOZ_ALERTMANAGER_PROVIDER=signoz
       - SIGNOZ_TELEMETRYSTORE_CLICKHOUSE_DSN=tcp://clickhouse:9000
@@ -245,10 +251,10 @@ services:
       - --feature-gates=-pkg.translator.prometheus.NormalizeName
     volumes:
       - type: bind
-        source: deploy/docker/otel-collector-config.yaml
+        source: ./deploy/docker/otel-collector-config.yaml
         target: /etc/otel-collector-config.yaml
       - type: bind
-        source: deploy/common/signoz/otel-collector-opamp-config.yaml
+        source: ./deploy/common/signoz/otel-collector-opamp-config.yaml
         target: /etc/manager-config.yaml
     environment:
       - OTEL_RESOURCE_ATTRIBUTES=host.name=signoz-host,os.type=linux
